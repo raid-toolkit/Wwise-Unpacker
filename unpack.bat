@@ -1,28 +1,28 @@
 @echo off
 
 set TYPE=%1
-echo === Wwise_Unpacker v1.4 ===
-echo.
-echo == Unpacking to '%TYPE%'
-echo.
+::echo === Wwise_Unpacker v1.4 ===
+::echo.
+::echo == Unpacking to '%TYPE%'
+::echo.
 
 goto:start
 
 rem ================= Methods
 :UNPACK_WAV
-  rd /s /q dest_raw
-  rd /s /q dest_wav
+  rmdir /s/q dest_raw > nul 2>&1
+  rmdir /s/q dest_wav > nul 2>&1
   mkdir dest_raw > nul 2>&1
   mkdir dest_wav > nul 2>&1
   
-  echo ---- Running 'quickbms' for PCK: Extract raw files to "dest_raw"
+  ::echo ---- Running 'quickbms' for PCK: Extract raw files to "dest_raw"
   for %%a in ("Game_Files\*.pck") do (
     Tools\quickbms.exe -q -k Tools\wwise_pck_extractor.bms "%%a" "dest_raw"
   )
   echo.
   
-  echo ---- Running 'bnkextr' for BNK: Extract raw files to "dest_raw"
-  for %%b in ("Game_Files\*.bnk") do (
+  ::echo ---- Running 'bnkextr' for BNK: Extract raw files to "dest_raw"
+  for %%b in ("dest_raw\*.bnk") do (
     cd dest_raw
     ..\Tools\bnkextr.exe "..\%%b" > nul
     ren *.wav *.wem
@@ -30,7 +30,7 @@ rem ================= Methods
   )
   echo.
   
-  echo ---- Running 'vgmstream-cli': Convert Wwise to wav in "dest_wav"
+  ::echo ---- Running 'vgmstream-cli': Convert Wwise to wav in "dest_wav"
   for /r "dest_raw" %%c in ("*.wem") do (
     echo "%%c => wav"
     Tools\vgmstream-cli.exe -o "dest_wav\%%~nc.wav" "%%c" > nul
@@ -44,12 +44,12 @@ goto:eof
     call :UNPACK_WAV
   )
   
-  rd /s /q dest_mp3
+  rmdir /s/q dest_mp3 >nul 2>&1
   mkdir dest_mp3 > nul 2>&1
   
-  echo ---- Running 'ffmpeg': Convert to mp3
+  :: echo ---- Running 'ffmpeg': Convert to mp3
   for /r "dest_wav" %%a in ("*.wav") do (
-    echo Converting %%~nxa
+    :: echo Converting %%~nxa
     Tools\ffmpeg.exe -loglevel error -y -i "%%a" -acodec libmp3lame -q:a 0 -y "dest_mp3\%%~na.mp3"
   )
   echo.
@@ -67,8 +67,6 @@ if "%TYPE%"=="mp3" (
 
 
 rem ================= Footer
-echo -------------------------------------------------------------
-echo == Unpack finished! Files should be in the 'dest_%TYPE%' folder
-echo -------------------------------------------------------------
-
-pause
+::echo -------------------------------------------------------------
+::echo == Unpack finished! Files should be in the 'dest_%TYPE%' folder
+::echo -------------------------------------------------------------
